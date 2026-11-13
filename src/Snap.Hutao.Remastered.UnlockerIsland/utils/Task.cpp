@@ -25,7 +25,7 @@ void Task::RunLater(DWORD delayMs, std::function<void()> callback)
 	if (!callback)
 		return;
 
-	ULONGLONG execTime = GetCurrentTimeMs() + static_cast<ULONGLONG>(delayMs);
+	ULONGLONG execTime = GetCurrentTimeMs() + (ULONGLONG)delayMs;
 	TaskItem item{ execTime, std::move(callback) };
 
 	EnterCriticalSection(&m_cs);

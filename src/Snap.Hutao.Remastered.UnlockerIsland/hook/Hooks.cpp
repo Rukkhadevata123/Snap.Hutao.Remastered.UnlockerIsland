@@ -182,7 +182,7 @@ static DWORD FindResinListFieldOffset(LPVOID function)
         return 0;
     }
 
-    const auto* code = static_cast<const uint8_t*>(function);
+    const auto* code = (const uint8_t*)function;
 
     __try
     {
@@ -227,7 +227,7 @@ static void* FindDialogueCooldownJump(void* function)
         return nullptr;
     }
 
-    const auto* code = static_cast<const uint8_t*>(function);
+    const auto* code = (const uint8_t*)function;
 
     __try
     {
@@ -332,7 +332,6 @@ static void ResolveOffsetsFromPatterns(HookFunctionOffsets& offsets)
             offsets.ClosePage = Scanner::ReadFieldOffset(addr, 0x2A);
     }
 
-    // FastSkipTalk：先特征码定位函数入口，再在函数体里找那条冷却 jbe
     if (!FastSkipTalkPattern.empty())
     {
         if (auto* funcAddr = Scanner::Scan(FastSkipTalkPattern))
@@ -389,22 +388,10 @@ static void ResolveCatherineOffsetsFromPatterns(HookFunctionOffsets& offsets)
 	ScanIfMissing(CatherineEntryPattern,      offsets.CatherineEntry);
 	ScanIfMissing(CatherineOpenDialogPattern, offsets.CatherineOpenDialog);
 
-	// 这两个函数的国服/国际服编译结果不同，两条特征码互不命中，先扫本国再扫另一条。
 	ScanIfMissing(CatherineDialogCtorPattern,         offsets.CatherineDialogCtor);
 	ScanIfMissing(CatherineDialogCtorPatternOversea,  offsets.CatherineDialogCtor);
 	ScanIfMissing(ExplorationEntryPattern,            offsets.ExplorationEntry);
 	ScanIfMissing(ExplorationEntryPatternOversea,     offsets.ExplorationEntry);
-
-	// 特征码是按游戏版本写死的（只跨服务器通用）：遇到新版本会全部扫不到，
-	// 用一条明确的日志提示去重新生成，而不是让功能静默失效。
-	if (offsets.CatherineEntry == 0 || offsets.CatherineOpenDialog == 0 ||
-		offsets.CatherineDialogCtor == 0 || offsets.ExplorationEntry == 0)
-	{
-		Logf("CatherineRedirect: signature miss (entry=0x%08lX open=0x%08lX ctor=0x%08lX exploration=0x%08lX)"
-			" - 游戏版本可能已更新，需要按 docs/catherine-redirect-version-guide.md 重新生成特征码",
-			(unsigned long)offsets.CatherineEntry, (unsigned long)offsets.CatherineOpenDialog,
-			(unsigned long)offsets.CatherineDialogCtor, (unsigned long)offsets.ExplorationEntry);
-	}
 }
 
 

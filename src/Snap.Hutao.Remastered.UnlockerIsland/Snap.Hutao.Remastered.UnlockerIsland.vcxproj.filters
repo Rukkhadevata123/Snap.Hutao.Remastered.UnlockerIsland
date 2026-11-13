@@ -31,6 +31,12 @@
     <Filter Include="头文件\function">
       <UniqueIdentifier>{0c79a70f-2db2-4dd3-98dc-3215387c445a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="头文件\il2cpp">
+      <UniqueIdentifier>{cba1bc22-1051-4f88-b177-ead32217ab66}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\il2cpp\MoleMole">
+      <UniqueIdentifier>{7918bc44-3fed-4c19-af44-fe2f8a3f927b}</UniqueIdentifier>
+    </Filter>
     <Filter Include="源文件\function">
       <UniqueIdentifier>{3cd45d4f-7b1c-4272-977d-401eac926838}</UniqueIdentifier>
     </Filter>
@@ -153,6 +159,36 @@
     </ClInclude>
     <ClInclude Include="utils\Scanner.h">
       <Filter>头文件\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="il2cpp\Il2CppObject.h">
+      <Filter>头文件\il2cpp</Filter>
+    </ClInclude>
+    <ClInclude Include="il2cpp\Il2CppString.h">
+      <Filter>头文件\il2cpp</Filter>
+    </ClInclude>
+    <ClInclude Include="il2cpp\Il2CppArray.h">
+      <Filter>头文件\il2cpp</Filter>
+    </ClInclude>
+    <ClInclude Include="il2cpp\Il2CppList.h">
+      <Filter>头文件\il2cpp</Filter>
+    </ClInclude>
+    <ClInclude Include="il2cpp\MoleMole\DeviceType.h">
+      <Filter>头文件\il2cpp\MoleMole</Filter>
+    </ClInclude>
+    <ClInclude Include="il2cpp\MoleMole\PaimonBeyondListType.h">
+      <Filter>头文件\il2cpp\MoleMole</Filter>
+    </ClInclude>
+    <ClInclude Include="il2cpp\MoleMole\PaimonEntryCategory.h">
+      <Filter>头文件\il2cpp\MoleMole</Filter>
+    </ClInclude>
+    <ClInclude Include="il2cpp\MoleMole\PaimonEntryConfig.h">
+      <Filter>头文件\il2cpp\MoleMole</Filter>
+    </ClInclude>
+    <ClInclude Include="il2cpp\MoleMole\PaimonEntryType.h">
+      <Filter>头文件\il2cpp\MoleMole</Filter>
+    </ClInclude>
+    <ClInclude Include="il2cpp\MoleMole\PaimonTeyvatListType.h">
+      <Filter>头文件\il2cpp\MoleMole</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

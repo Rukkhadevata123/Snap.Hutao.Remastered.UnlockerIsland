@@ -35,7 +35,7 @@ bool GamepadHotSwitch::Initialize()
     m_isExiting = false;
     m_hThread = CreateThread(nullptr, 0, [](LPVOID lpParam) -> DWORD
     {
-        GamepadHotSwitch* pThis = static_cast<GamepadHotSwitch*>(lpParam);
+        GamepadHotSwitch* pThis = (GamepadHotSwitch*)lpParam;
         pThis->MainThread();
         return 0;
     }, this, 0, nullptr);

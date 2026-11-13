@@ -188,6 +188,16 @@
     <ClInclude Include="hook\HookWndProc.h" />
     <ClInclude Include="IslandState.h" />
     <ClInclude Include="Logger.h" />
+    <ClInclude Include="il2cpp\Il2CppObject.h" />
+    <ClInclude Include="il2cpp\Il2CppString.h" />
+    <ClInclude Include="il2cpp\Il2CppArray.h" />
+    <ClInclude Include="il2cpp\Il2CppList.h" />
+    <ClInclude Include="il2cpp\MoleMole\DeviceType.h" />
+    <ClInclude Include="il2cpp\MoleMole\PaimonBeyondListType.h" />
+    <ClInclude Include="il2cpp\MoleMole\PaimonEntryCategory.h" />
+    <ClInclude Include="il2cpp\MoleMole\PaimonEntryConfig.h" />
+    <ClInclude Include="il2cpp\MoleMole\PaimonEntryType.h" />
+    <ClInclude Include="il2cpp\MoleMole\PaimonTeyvatListType.h" />
 
     <ClInclude Include="utils\Patch.h" />
     <ClInclude Include="utils\Scanner.h" />

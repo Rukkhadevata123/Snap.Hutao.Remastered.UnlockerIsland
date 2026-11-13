@@ -54,11 +54,14 @@ struct HookFunctionOffsets
 	DWORD InLevelClockPageCloseButtonClicked;
 	DWORD ClosePage;
 
-	// 凯瑟琳重定向的两个 hook 目标（追加在末尾，已有字段偏移不变）
 	DWORD CatherineOpenDialog;                 // BLMOGIINPEM::LNJINJKFFHK  [pattern scan]
 	DWORD CatherineDialogCtor;                 // BLMOGIINPEM::.ctor         [pattern scan]
 	DWORD ExplorationEntry;                    // HGPJJCNAHLB(UIFactory)::BKJHPFINMPE [pattern scan]
 
-	// 派蒙显示（追加在末尾，已有字段偏移不变）
 	DWORD AvatarPaimonDisappear;               // MoleMole.BaseActor.AvatarPaimonDisappear  [pattern scan]
+
+	DWORD SetupPaimonConfig;                   // IEANHLFIEEO::JCBGGDGNFHJ  [pattern scan]
+	DWORD UIEntryConfigStaticBlock;            // SetupPaimonConfig 里 UIEntryConfig 静态块的 RVA  [derived]
+	DWORD UIEntryConfigStaticField;            // 静态块里 UIEntryConfig 字段的偏移  [derived]
+	DWORD UIEntryConfigEntryConfigs;           // UIEntryConfig::entryConfigs 字段的偏移  [derived]
 };

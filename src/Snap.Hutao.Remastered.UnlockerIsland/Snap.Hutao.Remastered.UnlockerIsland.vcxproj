@@ -181,6 +181,7 @@
     <ClInclude Include="function\WeakMapCheck.h" />
     <ClInclude Include="function\FastSkipTalk.h" />
     <ClInclude Include="function\CatherineRedirect.h" />
+    <ClInclude Include="function\LegacyPaimonMenu.h" />
     <ClInclude Include="GamepadHotSwitch.h" />
     <ClInclude Include="HookEnvironment.h" />
     <ClInclude Include="HookFunctionOffsets.h" />
@@ -241,6 +242,7 @@
     <ClCompile Include="function\WeakMapCheck.cpp" />
     <ClCompile Include="function\FastSkipTalk.cpp" />
     <ClCompile Include="function\CatherineRedirect.cpp" />
+    <ClCompile Include="function\LegacyPaimonMenu.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

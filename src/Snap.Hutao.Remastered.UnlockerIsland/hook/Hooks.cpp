@@ -22,6 +22,7 @@
 #include "../function/WeakMapCheck.h"
 #include "../function/FastSkipTalk.h"
 #include "../function/CatherineRedirect.h"
+#include "../function/LegacyPaimonMenu.h"
 
 #include "../BeyondResist.h"
 #include "../utils/Task.h"
@@ -31,6 +32,7 @@
 
 #include <vector>
 #include <cstring>
+#include <cstdint>
 #include <Windows.h>
 
 // Offsets are defined in Constants.cpp (g_ChinaOffsets / g_OverseaOffsets)
@@ -105,6 +107,9 @@ LPVOID catherineOpenDialog = nullptr;
 LPVOID explorationPageEntry = nullptr;
 LPVOID originalCatherineEntry = nullptr;
 LPVOID originalCatherineDialogCtor = nullptr;
+
+// Legacy Paimon menu（定义在这里，声明在 function/HooksShared.h）
+LPVOID originalSetupPaimonConfig = nullptr;
 
 // ===================================================================
 // Function registry & dispatch
@@ -394,6 +399,176 @@ static void ResolveCatherineOffsetsFromPatterns(HookFunctionOffsets& offsets)
 	ScanIfMissing(ExplorationEntryPatternOversea,     offsets.ExplorationEntry);
 }
 
+// ===================================================================
+// 旧版派蒙菜单用到的偏移
+//
+// SetupPaimonConfig 重建列表之前，会从游戏自己的静态缓存里取
+// UIEntryConfig。7.2 的机器码形状：
+//
+//     mov rax, [rip+disp32]      ; 静态块
+//     mov rax, [rax+disp32]      ; UIEntryConfig 实例
+//     test rax, rax
+//     je ...
+//     mov r13, [rax+disp8]       ; entryConfigs
+//
+// 这三个偏移每个版本都不一样，所以扫描到函数后直接从机器码里解析；
+// 换版本时只需要更新 SetupPaimonConfigPattern 这一条特征码。
+// ===================================================================
+static constexpr int kUIEntryConfigScanLimit = 0x600;
+static constexpr int kUIEntryConfigAccessSize = 27;
+
+// 访问序列里各条指令的偏移。
+static constexpr int kStaticBlockMov = 0;
+static constexpr int kStaticBlockDisp = 3;
+static constexpr int kStaticBlockMovSize = 7;
+static constexpr int kStaticFieldMov = 7;
+static constexpr int kStaticFieldDisp = 10;
+static constexpr int kTestRax = 14;
+static constexpr int kJe = 17;
+static constexpr int kEntryConfigsMov = 23;
+static constexpr int kEntryConfigsDisp = 26;
+
+// 模块镜像不会超过 1GB；用来过滤明显不成立的 RIP 目标。
+static constexpr INT64 kMaxModuleRva = 0x40000000;
+
+static bool MatchesUIEntryConfigAccess(const uint8_t* code)
+{
+	// mov rax, [rip+disp32]
+	if (code[kStaticBlockMov] != 0x48 ||
+		code[kStaticBlockMov + 1] != 0x8B ||
+		code[kStaticBlockMov + 2] != 0x05)
+	{
+		return false;
+	}
+
+	// mov rax, [rax+disp32]
+	if (code[kStaticFieldMov] != 0x48 ||
+		code[kStaticFieldMov + 1] != 0x8B ||
+		code[kStaticFieldMov + 2] != 0x80)
+	{
+		return false;
+	}
+
+	// test rax, rax
+	if (code[kTestRax] != 0x48 ||
+		code[kTestRax + 1] != 0x85 ||
+		code[kTestRax + 2] != 0xC0)
+	{
+		return false;
+	}
+
+	// je rel32
+	if (code[kJe] != 0x0F || code[kJe + 1] != 0x84)
+	{
+		return false;
+	}
+
+	// mov r8-r15, [rax+disp8]（7.2 是 mov r13, [rax+18h]）
+	if (code[kEntryConfigsMov] != 0x4C ||
+		code[kEntryConfigsMov + 1] != 0x8B ||
+		(code[kEntryConfigsMov + 2] & 0xC7) != 0x40)
+	{
+		return false;
+	}
+
+	return true;
+}
+
+static bool TryResolveUIEntryConfigAccess(const void* function,
+	DWORD& staticBlock,
+	DWORD& staticField,
+	DWORD& entryConfigs)
+{
+	if (function == nullptr || g_hModule == nullptr)
+	{
+		return false;
+	}
+
+	const auto* code = (const uint8_t*)function;
+
+	__try
+	{
+		for (int offset = 0; offset + kUIEntryConfigAccessSize <= kUIEntryConfigScanLimit; ++offset)
+		{
+			const uint8_t* access = code + offset;
+			if (!MatchesUIEntryConfigAccess(access))
+			{
+				continue;
+			}
+
+			void* block = Scanner::ResolveRelative(
+				(void*)(access + kStaticBlockMov), kStaticBlockDisp, kStaticBlockMovSize);
+			if (block == nullptr)
+			{
+				continue;
+			}
+
+			const auto rva = GetVirtualAddress((INT64)block);
+			if (rva <= 0 || rva > kMaxModuleRva)
+			{
+				continue;
+			}
+
+			DWORD field = 0;
+			memcpy(&field, access + kStaticFieldDisp, sizeof(field));
+			if (field == 0)
+			{
+				continue;
+			}
+
+			staticBlock = (DWORD)rva;
+			staticField = field;
+			entryConfigs = access[kEntryConfigsDisp];
+			return true;
+		}
+	}
+	__except (EXCEPTION_EXECUTE_HANDLER)
+	{
+		return false;
+	}
+
+	return false;
+}
+
+static void ResolveLegacyPaimonMenuOffsetsFromPatterns(HookFunctionOffsets& offsets)
+{
+	if (offsets.SetupPaimonConfig == 0)
+	{
+		if (auto* addr = Scanner::Scan(SetupPaimonConfigPattern))
+		{
+			offsets.SetupPaimonConfig = (DWORD)GetVirtualAddress((INT64)addr);
+		}
+	}
+
+	if (offsets.SetupPaimonConfig == 0)
+	{
+		return;
+	}
+
+	if (offsets.UIEntryConfigStaticBlock != 0 &&
+		offsets.UIEntryConfigStaticField != 0 &&
+		offsets.UIEntryConfigEntryConfigs != 0)
+	{
+		return;
+	}
+
+	auto* function = (const void*)GetFunctionAddress(offsets.SetupPaimonConfig);
+	DWORD staticBlock = 0;
+	DWORD staticField = 0;
+	DWORD entryConfigs = 0;
+
+	if (!TryResolveUIEntryConfigAccess(function, staticBlock, staticField, entryConfigs))
+	{
+		Log("LegacyPaimonMenu: UIEntryConfig access not found in SetupPaimonConfig - feature disabled");
+		offsets.SetupPaimonConfig = 0;
+		return;
+	}
+
+	offsets.UIEntryConfigStaticBlock = staticBlock;
+	offsets.UIEntryConfigStaticField = staticField;
+	offsets.UIEntryConfigEntryConfigs = entryConfigs;
+}
+
 
 // ===================================================================
 // Master SetFov hook — also serves as the main per-frame dispatch
@@ -498,6 +673,7 @@ void SetupHooks()
 	}
 
 	ResolveCatherineOffsetsFromPatterns(*offsets);
+	ResolveLegacyPaimonMenuOffsetsFromPatterns(*offsets);
 
 	g_pEnv->Offsets = *offsets;
 
@@ -523,6 +699,7 @@ void SetupHooks()
 	g_functions.push_back(new WeakMapCheck());
 	g_functions.push_back(new FastSkipTalk());
 	g_functions.push_back(new CatherineRedirect());
+	g_functions.push_back(new LegacyPaimonMenu());
 
 	// Initialize all functions (resolves offsets, creates MinHook hooks)
 	for (auto* func : g_functions)

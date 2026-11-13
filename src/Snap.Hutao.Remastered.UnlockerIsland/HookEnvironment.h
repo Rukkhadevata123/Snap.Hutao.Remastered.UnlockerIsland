@@ -41,6 +41,7 @@ struct HookEnvironment
     BOOL  DisablePlayerDiveMosaic;
     BOOL  FastSkipTalk;
     BOOL  RedirectCatherine;
+    BOOL  LegacyPaimonMenu;
 
     HookFunctionOffsets Offsets;
 };

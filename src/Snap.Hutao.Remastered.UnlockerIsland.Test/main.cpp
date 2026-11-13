@@ -40,7 +40,7 @@ struct RemoteMemDeleter
 // ---------------------------------------------------------------------------
 
 constexpr auto SharedMemName = L"4F3E8543-40F7-4808-82DC-21E48A6037A7";
-constexpr auto TargetDllName = L"Dumper.dll";
+constexpr auto TargetDllName = L"Snap.Hutao.Remastered.UnlockerIsland.dll";
 
 // ---------------------------------------------------------------------------
 // Game path resolution
@@ -123,8 +123,8 @@ struct SharedMemory
             return false;
         }
 
-        env = static_cast<HookEnvironment*>(
-            MapViewOfFile(mapping, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(HookEnvironment)));
+        env = (HookEnvironment*)MapViewOfFile(
+            mapping, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(HookEnvironment));
 
         if (!env)
         {
@@ -270,7 +270,6 @@ static void ConfigureEnvironment(HookEnvironment& env)
 {
     ZeroMemory(&env, sizeof(env));
 
-    env.Size = sizeof(HookEnvironment);
     env.State = IslandState::None;
     env.IsOversea = FALSE;
 
@@ -294,6 +293,7 @@ static void ConfigureEnvironment(HookEnvironment& env)
     env.WeakMapCheck         = TRUE;
     env.FastSkipTalk         = TRUE;
     env.RedirectCatherine    = TRUE;
+    env.LegacyPaimonMenu     = TRUE;
     env.CombineHotkey        = VK_F12;
 
     // Resin item overrides
@@ -329,9 +329,10 @@ static void ConfigureEnvironment(HookEnvironment& env)
     env.Offsets.GetComponent             = 0x15B61F60;
     env.Offsets.GetName                  = 0x15B79680;
     env.Offsets.CheckCanOpenMap          = 0x69E9DD3;
-    env.Offsets.CatherineEntry           = 0xE4690F0;
+    env.Offsets.CatherineEntry           = 0xE43A810;
     env.Offsets.CatherineOpenDialog      = 0x117BBF80;
     env.Offsets.CatherineDialogCtor      = 0x117C1480;
+    env.Offsets.ExplorationEntry         = 0xA653DA0;
 }
 
 // ---------------------------------------------------------------------------

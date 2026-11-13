@@ -60,6 +60,7 @@ extern std::string SetTextPattern;
 extern std::string SetWaterMaskUIDPattern;
 extern std::string SetupPlayerProfilePagePattern;
 extern std::string FastSkipTalkPattern;
+extern std::string SetupPaimonConfigPattern;
 extern std::string CatherineEntryPattern;
 extern std::string CatherineOpenDialogPattern;
 extern std::string CatherineDialogCtorPattern;

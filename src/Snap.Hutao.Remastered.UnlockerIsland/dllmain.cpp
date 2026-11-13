@@ -110,6 +110,7 @@ DWORD WINAPI WorkerThread(LPVOID lpParam)
 		std::cout << "WeakMapCheck = " << g_pEnv->WeakMapCheck << std::endl;
 		std::cout << "FastSkipTalk = " << g_pEnv->FastSkipTalk << std::endl;
 		std::cout << "RedirectCatherine = " << g_pEnv->RedirectCatherine << std::endl;
+		std::cout << "LegacyPaimonMenu = " << g_pEnv->LegacyPaimonMenu << std::endl;
 	}
 
 	SetupHooks();
@@ -159,6 +160,10 @@ DWORD WINAPI WorkerThread(LPVOID lpParam)
 		std::cout << "    /* CatherineOpenDialog */ 0x" << std::hex << o.CatherineOpenDialog << "," << std::endl;
 		std::cout << "    /* CatherineDialogCtor */ 0x" << std::hex << o.CatherineDialogCtor << "," << std::endl;
 		std::cout << "    /* ExplorationEntry */ 0x" << std::hex << o.ExplorationEntry << "," << std::endl;
+		std::cout << "    /* SetupPaimonConfig */ 0x" << std::hex << o.SetupPaimonConfig << "," << std::endl;
+		std::cout << "    /* UIEntryConfigStaticBlock */ 0x" << std::hex << o.UIEntryConfigStaticBlock << "," << std::endl;
+		std::cout << "    /* UIEntryConfigStaticField */ 0x" << std::hex << o.UIEntryConfigStaticField << "," << std::endl;
+		std::cout << "    /* UIEntryConfigEntryConfigs */ 0x" << std::hex << o.UIEntryConfigEntryConfigs << "," << std::endl;
 		std::cout << "};" << std::endl;
 	}
 

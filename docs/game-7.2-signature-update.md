@@ -7,7 +7,7 @@
 
 ## 1. 结论
 
-`Constants.cpp` 里 41 条特征码在两个客户端上都能命中正确的函数
+`Constants.cpp` 里 42 条特征码在两个客户端上都能命中正确的函数
 （4 条是"多处命中、取最低地址"，与 7.1 行为一致）。其中 9 条因为 7.2 有实质变化而重写：
 
 | 常量 | 7.1 | 7.2 | 改动原因 |
@@ -21,6 +21,12 @@
 | `CatherineOpenDialogPattern` | `0x117BBF80` | `0x101AAC80` | 实例字段 `0x164`→`0x188` |
 | `CatherineDialogCtorPattern` | `0x117C1480` | `0x101B0C60` | 单例字段全变 |
 | `ExplorationEntryPattern` | `0x0A653DA0` | `0x10EF9190` | 立即数（页面 id `7`→…）、栈偏移全变 |
+
+另有一条 `SetupPaimonConfigPattern`（旧版派蒙菜单）是 7.2 新增的：只保留 opcode
+骨架、立即数/位移全部通配，7.2 国服 `0x8F3CE30` / 国际服 `0x8F38230` 共用一条，
+两边都命中 `IEANHLFIEEO::JCBGGDGNFHJ`。UIEntryConfig 静态块、字段偏移和
+`entryConfigs` 偏移不写死，由 `Hooks.cpp::TryResolveUIEntryConfigAccess` 从命中
+函数的机器码里解析（见 §5）。
 
 四个凯瑟琳函数的 7.2 类型名：
 
@@ -76,14 +82,14 @@ python scripts\ida_mcp.py 13338 --info
 `scripts\crossverify.py` 会逐条比对两条服务器的命中点：
 
 ```powershell
-python scripts\crossverify.py            # 39 条单特征码 + 2 对双服务器特征码
+python scripts\crossverify.py            # 40 条单特征码 + 2 对双服务器特征码
 python scripts\crossverify.py --with71   # 附带 7.1 命中情况
 ```
 
-结果：**41 条全部对齐**。判定方法是把两边命中点各自反汇编 60 条指令，
+结果：**42 条全部对齐**。判定方法是把两边命中点各自反汇编 60 条指令，
 比 "指令形状"（助记符 + 操作数类型 + 寄存器），两边前缀一致才认为是同一个函数：
 
-- 39 条单特征码：国服/国际服命中同一个函数（多数直接 60/60 全等）；
+- 40 条单特征码：国服/国际服命中同一个函数（多数直接 60/60 全等）；
 - `CatherineDialogCtor` / `ExplorationEntry`：**两个客户端的代码生成不同**，
   一条特征码无法同时命中，各补了一条 `...Oversea`：
 
@@ -104,6 +110,8 @@ python scripts\crossverify.py --with71   # 附带 7.1 命中情况
 | `ResinList` | `SetupResinList` 里 `mov reg,[rbx+disp32]` 的 disp32 | `0x228` | `0x230` |
 | `ClosePage` | `ClosePageCaller` + `0x2A` 处的 disp32 | `0x338` | `0x338` |
 | `FastSkipTalk` | 函数里 `ucomiss xmm0,[reg+disp32]` 后面那条 `jbe rel32` | `0x10C5E7A7` | `0x10C761D0` |
+| `UIEntryConfigStaticBlock` / `...StaticField` | `SetupPaimonConfig` 里 `mov rax,[rip+disp32]; mov rax,[rax+disp32]` 的两个 disp | `0x586B600` / `0x2AD50` | `0x586B480` / `0x2B0B8` |
+| `UIEntryConfigEntryConfigs` | 紧接着 `mov r13,[rax+disp8]` 的 disp8 | `0x18` | `0x18` |
 
 **ResinList 曾经是错的**：旧代码按固定偏移 `func + 0x1A` 去读，7.2 重新编译后这个
 位置落进了函数开头 `cmp byte [rip+..]` 的 RIP 位移里，读出来是 `0xF51C77`；

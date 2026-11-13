@@ -81,3 +81,7 @@ extern LPVOID catherineOpenDialog;            // LNJINJKFFHK 本体（开窗逻�
 extern LPVOID explorationPageEntry;           // UIFactory::BKJHPFINMPE（偶数次调用目标）
 extern LPVOID originalCatherineEntry;         // 以下两个是 MH_CreateHook 的 trampoline
 extern LPVOID originalCatherineDialogCtor;
+
+// --- 旧版派蒙菜单（SetupPaimonConfig）---
+typedef void (*SetupPaimonConfigFn)(void* pThis); // IEANHLFIEEO::JCBGGDGNFJH
+extern LPVOID originalSetupPaimonConfig;      // MH_CreateHook 的 trampoline（定义在 Hooks.cpp）
